@@ -17,6 +17,8 @@ func _enter_tree() -> void:
 	_build_panel()
 	_http = HTTPRequest.new()
 	_http.timeout = REQUEST_TIMEOUT_SECONDS
+	_http.body_size_limit = 65536
+	_http.max_redirects = 0
 	_http.request_completed.connect(_on_request_completed)
 	add_child(_http)
 	add_control_to_dock(DOCK_SLOT_LEFT_UL, _dock)
@@ -121,7 +123,8 @@ func _test_connection() -> void:
 		_status_label.text = "Informe o endereço e um token com pelo menos 32 caracteres."
 		return
 
-	if not endpoint.begins_with("https://") and not endpoint.begins_with("http://127.0.0.1") and not endpoint.begins_with("http://localhost"):
+	var local_http := endpoint == "http://127.0.0.1" or endpoint.begins_with("http://127.0.0.1:") or endpoint == "http://localhost" or endpoint.begins_with("http://localhost:")
+	if not endpoint.begins_with("https://") and not local_http:
 		_status_label.text = "Por segurança, use HTTPS. HTTP só é aceito em localhost."
 		return
 
